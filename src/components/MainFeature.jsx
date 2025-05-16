@@ -79,8 +79,11 @@ export default function MainFeature() {
       setNewTask('');
       toast.success('Task added successfully');
     } catch (error) {
-    toast.success('Task added successfully');
+      toast.error('Failed to add task');
+      console.error('Error adding task:', error);
+    }
   };
+  
   const handleDeleteTask = async (id) => {
     try {
       await deleteTask(id);
@@ -121,6 +124,8 @@ export default function MainFeature() {
   };
   const saveEdit = async () => {
     if (editingTask.title.trim() === '') {
+      toast.error('Task title cannot be empty');
+      return;
     }
     try {
       const updatedTaskData = {
