@@ -20,10 +20,21 @@ const LogOutIcon = getIcon('LogOut');
 export const AuthContext = createContext(null);
 
 function App() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Check for saved theme preference or use system preference
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       return true;
     }
     return false;
   });
+
+  const userState = useSelector((state) => state.user);
+  const isAuthenticated = userState?.isAuthenticated || false;
 
   // Apply the theme when the component mounts or theme changes
   useEffect(() => {
@@ -35,12 +46,6 @@ function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
-
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const userState = useSelector((state) => state.user);
-  const isAuthenticated = userState?.isAuthenticated || false;
 
   // Initialize ApperUI once when the app loads
   useEffect(() => {
@@ -131,14 +136,6 @@ function App() {
     }
   };
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check for saved theme preference or use system preference
-    if (localStorage.getItem('theme') === 'dark' || 
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      return true;
-    }
-    return false;
-  });
 
   // Toggle theme function
   const toggleTheme = () => {
