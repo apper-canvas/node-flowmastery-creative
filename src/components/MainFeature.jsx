@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getIcon } from '../utils/iconUtils';
 import { toast } from 'react-toastify';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
 // Import needed icons
 const PlusIcon = getIcon('Plus');
@@ -20,73 +21,132 @@ export default function MainFeature() {
   const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
-    // Simulate loading initial tasks
-    const timer = setTimeout(() => {
-      setTasks([
-        { id: 1, title: 'Create project plan', completed: true, priority: 'high' },
-        { id: 2, title: 'Schedule team meeting', completed: false, priority: 'medium' },
-        { id: 3, title: 'Research competitors', completed: false, priority: 'high' },
-        { id: 4, title: 'Design user interface', completed: false, priority: 'high' },
-      ]);
+    // Load tasks from API
+    loadTasks();
+  }, [searchTerm, filterStatus]);
+
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const options = {
+        searchTerm: searchTerm,
+        filterStatus: filterStatus
+      };
+      
+      const fetchedTasks = await fetchTasks(options);
+      
+      // Transform API data format to component format
+      const transformedTasks = fetchedTasks.map(task => ({
+        id: task.Id,
+        title: task.title || task.Name,
+        completed: task.completed || false,
+        priority: task.priority || 'medium'
+      }));
+      
+      setTasks(transformedTasks);
+    } catch (error) {
+      toast.error("Failed to load tasks");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const addTask = () => {
+  const addTask = async () => {
     if (newTask.trim() === '') {
       toast.error('Task cannot be empty');
       return;
     }
 
-    const newTaskObject = {
-      id: Date.now(),
-      title: newTask,
+    try {
+      const taskData = {
+        Name: newTask,
+        title: newTask,
+        completed: false,
+        priority: 'medium'
+      };
+      
+      const createdTask = await createTask(taskData);
+      
+      // Add the new task to the list
+      const newTaskObject = {
+        id: createdTask.Id,
+       completed: false,
       completed: false,
-      priority: 'medium'
+      };
     };
-
-    setTasks([...tasks, newTaskObject]);
-    setNewTask('');
+      setTasks([...tasks, newTaskObject]);
+      setNewTask('');
+      toast.success('Task added successfully');
+    } catch (error) {
+      toast.error('Failed to add task');
+    }
     toast.success('Task added successfully');
   };
-
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const handleDeleteTask = async (id) => {
+    try {
+      await deleteTask(id);
+      setTasks(tasks.filter(task => task.id !== id));
+      toast.info('Task removed');
+    } catch (error) {
+      toast.error('Failed to delete task');
+    }
     toast.info('Task removed');
   };
-
-  const toggleComplete = (id) => {
-    const updatedTasks = tasks.map(task => {
-      if (task.id === id) {
-        const updatedTask = { ...task, completed: !task.completed };
-        return updatedTask;
-      }
-      return task;
+  const toggleComplete = async (id) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const updatedTaskData = {
+        Id: id,
+        completed: !task.completed
+      };
+      
+      await updateTask(updatedTaskData);
+      
+      const updatedTasks = tasks.map(t => {
+        if (t.id === id) {
+          return { ...t, completed: !t.completed };
+        }
+        return t;
+      });
     });
-
-    setTasks(updatedTasks);
-    const task = tasks.find(t => t.id === id);
+      setTasks(updatedTasks);
+      toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
+    } catch (error) {
+      toast.error('Failed to update task');
+    }
     toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
   };
 
   const startEditing = (task) => {
     setEditingTask({ ...task });
   };
-
+  const saveEdit = async () => {
   const saveEdit = () => {
     if (editingTask.title.trim() === '') {
       toast.error('Task cannot be empty');
       return;
     }
-    
-    const updatedTasks = tasks.map(task => 
-      task.id === editingTask.id ? editingTask : task
-    );
-    
-    setTasks(updatedTasks);
-    setEditingTask(null);
+    try {
+      const updatedTaskData = {
+        Id: editingTask.id,
+        title: editingTask.title,
+        priority: editingTask.priority
+      };
+      
+      await updateTask(updatedTaskData);
+      
+      const updatedTasks = tasks.map(task => 
+        task.id === editingTask.id ? editingTask : task
+      );
+      
+      setTasks(updatedTasks);
+      setEditingTask(null);
+      toast.success('Task updated successfully');
+    } catch (error) {
+      toast.error('Failed to update task');
+    }
     toast.success('Task updated successfully');
   };
 
@@ -229,7 +289,7 @@ export default function MainFeature() {
                       <EditIcon size={16} className="text-surface-500 dark:text-surface-400" />
                     </button>
                     <button
-                      onClick={() => deleteTask(task.id)}
+                      onClick={() => handleDeleteTask(task.id)}
                       className="p-2 hover:bg-surface-100 dark:hover:bg-surface-600 rounded-full"
                       aria-label="Delete task"
                     >

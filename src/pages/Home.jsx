@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getIcon } from '../utils/iconUtils';
 import MainFeature from '../components/MainFeature';
-import { toast } from 'react-toastify';
+import { toast } from 'react-toastify'; 
+import { getTaskStats } from '../services/taskService';
+import { getActiveWorkflowCount } from '../services/workflowService';
 
 // Import needed icons
 const CheckCircleIcon = getIcon('CheckCircle');
@@ -17,20 +19,34 @@ export default function Home() {
     productivity: 0
   });
 
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
+  const fetchStats = async () => {
+    try {
+      // Get task statistics
+      const taskStats = await getTaskStats();
+      
+      // Get active workflow count
+      const workflowCount = await getActiveWorkflowCount();
+      
       setStatsData({
-        tasksCompleted: 42,
-        workflows: 8,
-        productivity: 78
+        tasksCompleted: taskStats.tasksCompleted,
+        workflows: workflowCount,
+        productivity: taskStats.productivity
       });
+      
       setIsLoaded(true);
-      toast.success("Welcome to FlowMastery!", {
-        icon: "🚀"
+      
+      toast.success("Dashboard updated successfully", {
+        icon: "📊"
       });
-    }, 800);
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+      toast.error("Failed to load dashboard data");
+      setIsLoaded(true);
+    }
+  };
 
+  useEffect(() => {
+    const timer = setTimeout(() => fetchStats(), 800);
     return () => clearTimeout(timer);
   }, []);
 
