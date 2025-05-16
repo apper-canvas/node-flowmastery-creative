@@ -165,7 +165,7 @@ function App() {
             >
               <span className="text-white text-lg font-bold">F</span>
             </motion.div>
-            <h1 className="text-xl font-bold text-primary">FlowMastery</h1>
+            <h1 className="text-xl font-bold text-primary">FlowMystry</h1>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -206,7 +206,7 @@ function App() {
 
       <footer className="w-full py-4 bg-white dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700">
         <div className="container mx-auto px-4 text-center text-sm text-surface-600 dark:text-surface-400">
-          © {new Date().getFullYear()} FlowMastery. All rights reserved.
+          © {new Date().getFullYear()} FlowMystry. All rights reserved.
         </div>
       </footer>
 
