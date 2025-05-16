@@ -70,16 +70,15 @@ export default function MainFeature() {
       // Add the new task to the list
       const newTaskObject = {
         id: createdTask.Id,
-       completed: false,
-      completed: false,
+        title: newTask,
+        completed: false,
+        priority: 'medium'
       };
-    };
+      
       setTasks([...tasks, newTaskObject]);
       setNewTask('');
       toast.success('Task added successfully');
     } catch (error) {
-      toast.error('Failed to add task');
-    }
     toast.success('Task added successfully');
   };
   const handleDeleteTask = async (id) => {
@@ -90,7 +89,6 @@ export default function MainFeature() {
     } catch (error) {
       toast.error('Failed to delete task');
     }
-    toast.info('Task removed');
   };
   const toggleComplete = async (id) => {
     try {
@@ -110,23 +108,19 @@ export default function MainFeature() {
         }
         return t;
       });
-    });
+      
       setTasks(updatedTasks);
       toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
     } catch (error) {
       toast.error('Failed to update task');
     }
-    toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
   };
 
   const startEditing = (task) => {
     setEditingTask({ ...task });
   };
   const saveEdit = async () => {
-  const saveEdit = () => {
     if (editingTask.title.trim() === '') {
-      toast.error('Task cannot be empty');
-      return;
     }
     try {
       const updatedTaskData = {
@@ -147,7 +141,6 @@ export default function MainFeature() {
     } catch (error) {
       toast.error('Failed to update task');
     }
-    toast.success('Task updated successfully');
   };
 
   // Filter tasks based on search and filter status
